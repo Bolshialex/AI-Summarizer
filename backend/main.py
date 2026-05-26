@@ -1,6 +1,10 @@
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+load_dotenv()
+
+from routes.transcribe import router as transcribe_router
 
 app = FastAPI(title="Summarize-AI")
 
@@ -10,6 +14,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(transcribe_router)
 
 
 @app.get("/")

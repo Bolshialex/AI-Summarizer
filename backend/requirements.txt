@@ -22,3 +22,7 @@ websockets
 uvicorn[standard]
 supabase==2.28.0
 dotenv
+uvicorn[standard]
+python-multipart
+python-dotenv
+groq
