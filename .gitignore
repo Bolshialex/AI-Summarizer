@@ -1,2 +1,5 @@
 venv
 .env
+
+__pyache__/
+*.pyc
