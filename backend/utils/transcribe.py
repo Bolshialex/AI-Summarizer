@@ -3,7 +3,7 @@ from pathlib import Path
 
 from groq import Groq
 
-from utils.audio import split_by_time
+from utils.audio import probe_duration, split_by_time
 
 
 client = Groq()
@@ -20,14 +20,15 @@ def transcribe(audio_path: Path) -> dict:
         chunks = split_by_time(audio_path, Path(tmpdir), CHUNK_SECONDS)
         text_parts = []
         segments = []
-        for i, chunk_path in enumerate(chunks):
-            offset = i * CHUNK_SECONDS
+        offset = 0.0
+        for chunk_path in chunks:
             result = _transcribe_single(chunk_path)
             text_parts.append(result["text"])
             segments.extend(
                 {"start": s["start"] + offset, "end": s["end"] + offset, "text": s["text"]}
                 for s in result["segments"]
             )
+            offset += probe_duration(chunk_path)
         return {"text": " ".join(text_parts).strip(), "segments": segments}
 
 
