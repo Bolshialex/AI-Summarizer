@@ -3,8 +3,12 @@ from pydantic import field_validator
 
 
 class Settings(BaseSettings):
+    # SUPABASE
+    SUPABASE_URL: str
+    SUPABASE_SERVICE_ROLE_KEY: str
 
-    # LLM 
+    # LLM
+    GROQ_API_KEY: str
 
     # MODELS
 
