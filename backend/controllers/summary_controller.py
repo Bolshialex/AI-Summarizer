@@ -1,16 +1,20 @@
-from pathlib import Path
-from utils.transcribe import transcribe
 from utils.summarize import summarize_transcript
+from utils.timestamp import segments_to_prompt
 
-def summarize_video(audio_path: Path) -> dict:
-    transcription = transcribe(audio_path)
 
-    summary = summarize_transcript(
-        transcription["text"]
-    )
+def _transcript_for_llm(transcription: dict) -> str:
+    segments = transcription.get("segments") or []
+    if segments:
+        return segments_to_prompt(segments)
+    return transcription["text"]
+
+
+def summarize_transcription(transcription: dict) -> dict:
+    llm_input = _transcript_for_llm(transcription)
+    summary = summarize_transcript(llm_input)
 
     return {
         "summary": summary,
         "transcript": transcription["text"],
-        "segments": transcription["segments"],
+        "segments": transcription.get("segments", []),
     }

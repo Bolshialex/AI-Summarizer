@@ -3,10 +3,11 @@ from pathlib import Path
 
 from groq import Groq
 
+from config import settings
 from utils.audio import probe_duration, split_by_time
 
 
-client = Groq()
+client = Groq(api_key=settings.GROQ_API_KEY)
 
 MAX_BYTES = 25 * 1024 * 1024
 CHUNK_SECONDS = 20 * 60

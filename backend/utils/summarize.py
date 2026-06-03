@@ -30,4 +30,7 @@ def summarize_transcript(transcript: str) -> str:
         temperature=0.2,
     )
 
-    return response.choices[0].message.content
+    content = response.choices[0].message.content
+    if not content:
+        raise RuntimeError("Summarization model returned an empty response")
+    return content
