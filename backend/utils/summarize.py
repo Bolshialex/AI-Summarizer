@@ -13,7 +13,7 @@ def summarize_transcript(transcript: str) -> str:
     prompt = build_summary_prompt(transcript)
 
     response = client.chat.completions.create(
-        model="meta-llama/llama-3.3-70b-instruct:free",
+        model=settings.SUMMARY_MODEL,
         messages=[
             {
                 "role": "system",
