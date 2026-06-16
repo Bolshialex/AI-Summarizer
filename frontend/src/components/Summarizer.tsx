@@ -1,20 +1,52 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { summarizeFile } from "../api";
 import { formatTimestamp } from "../format";
 import type { SummaryResponse } from "../types";
+
+// Some containers (e.g. .mkv, .m4a) arrive with an empty MIME type, so fall
+// back to the extension when the browser doesn't give us audio/* or video/*.
+const EXTRA_EXTENSIONS = [
+  ".mp3", ".wav", ".m4a", ".flac", ".ogg", ".oga", ".opus", ".aac", ".wma",
+  ".mp4", ".mov", ".mkv", ".webm", ".avi", ".m4v", ".mpeg", ".mpg",
+];
+
+function isSupported(file: File): boolean {
+  if (file.type.startsWith("audio/") || file.type.startsWith("video/")) {
+    return true;
+  }
+  const name = file.name.toLowerCase();
+  return EXTRA_EXTENSIONS.some((ext) => name.endsWith(ext));
+}
 
 export default function Summarizer() {
   const [file, setFile] = useState<File | null>(null);
   const [dragging, setDragging] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<SummaryResponse | null>(null);
   const [copied, setCopied] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    if (!loading) return;
+    setElapsed(0);
+    const started = Date.now();
+    const id = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - started) / 1000));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [loading]);
+
   function pickFile(f: File | null) {
+    if (f && !isSupported(f)) {
+      setFile(null);
+      setError("That file type isn't supported — choose an audio or video file.");
+      return;
+    }
     setFile(f);
     setError(null);
+    setResult(null);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -98,9 +130,15 @@ export default function Summarizer() {
       </form>
 
       {loading && (
-        <p className="hint">
-          Transcribing and summarizing — this can take a minute for longer files.
-        </p>
+        <div className="working">
+          <div className="progress" aria-hidden="true">
+            <span />
+          </div>
+          <p className="hint">
+            Transcribing and summarizing — {elapsed}s elapsed. Longer files can
+            take a minute or two.
+          </p>
+        </div>
       )}
 
       {error && <p className="error">{error}</p>}

@@ -225,6 +225,39 @@ button[type="submit"]:disabled {
 }
 
 /* Feedback ------------------------------------------------------------- */
+.working {
+  margin-top: 16px;
+}
+
+.progress {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--accent-bg);
+  overflow: hidden;
+}
+
+.progress span {
+  display: block;
+  height: 100%;
+  width: 40%;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  animation: indeterminate 1.2s ease-in-out infinite;
+}
+
+@keyframes indeterminate {
+  0% {
+    margin-left: -40%;
+  }
+  100% {
+    margin-left: 100%;
+  }
+}
+
+.working .hint {
+  margin-top: 10px;
+}
+
 .hint {
   margin-top: 16px;
   color: var(--text);
