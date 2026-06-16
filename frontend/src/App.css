@@ -239,19 +239,10 @@ button[type="submit"]:disabled {
 .progress span {
   display: block;
   height: 100%;
-  width: 40%;
+  width: 0;
   border-radius: inherit;
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  animation: indeterminate 1.2s ease-in-out infinite;
-}
-
-@keyframes indeterminate {
-  0% {
-    margin-left: -40%;
-  }
-  100% {
-    margin-left: 100%;
-  }
+  transition: width 0.35s ease;
 }
 
 .working .hint {

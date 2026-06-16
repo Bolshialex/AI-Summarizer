@@ -1,7 +1,28 @@
 import { useEffect, useRef, useState } from "react";
-import { summarizeFile } from "../api";
+import { summarizeFile, type SummarizeProgress } from "../api";
 import { formatTimestamp } from "../format";
 import type { SummaryResponse } from "../types";
+
+// Maps a backend stage event to a bar position. Transcription owns most of the
+// bar since it's the slow step; the later stages each nudge it toward 100%.
+function stagePercent(p: SummarizeProgress): { percent: number; label: string } {
+  switch (p.stage) {
+    case "transcribing": {
+      const total = p.total ?? 0;
+      const done = p.done ?? 0;
+      const frac = total > 0 ? done / total : 0;
+      const label =
+        total > 1 ? `Transcribing audio (${done}/${total})` : "Transcribing audio";
+      return { percent: Math.round(frac * 70), label };
+    }
+    case "summarizing":
+      return { percent: 78, label: "Summarizing transcript" };
+    case "embedding":
+      return { percent: 92, label: "Generating embedding" };
+    case "saving":
+      return { percent: 97, label: "Saving summary" };
+  }
+}
 
 // Some containers (e.g. .mkv, .m4a) arrive with an empty MIME type, so fall
 // back to the extension when the browser doesn't give us audio/* or video/*.
@@ -23,6 +44,7 @@ export default function Summarizer() {
   const [dragging, setDragging] = useState(false);
   const [loading, setLoading] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+  const [progress, setProgress] = useState({ percent: 0, label: "" });
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<SummaryResponse | null>(null);
   const [copied, setCopied] = useState(false);
@@ -56,8 +78,17 @@ export default function Summarizer() {
     setLoading(true);
     setError(null);
     setResult(null);
+    setProgress({ percent: 4, label: "Uploading file" });
     try {
-      setResult(await summarizeFile(file));
+      setResult(
+        await summarizeFile(file, (p) => {
+          const next = stagePercent(p);
+          setProgress((prev) => ({
+            percent: Math.max(prev.percent, next.percent),
+            label: next.label,
+          }));
+        }),
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -132,11 +163,10 @@ export default function Summarizer() {
       {loading && (
         <div className="working">
           <div className="progress" aria-hidden="true">
-            <span />
+            <span style={{ width: `${progress.percent}%` }} />
           </div>
           <p className="hint">
-            Transcribing and summarizing — {elapsed}s elapsed. Longer files can
-            take a minute or two.
+            {progress.label} — {progress.percent}% · {elapsed}s elapsed
           </p>
         </div>
       )}
