@@ -212,8 +212,14 @@ npm run dev
 ### Stopping the servers
 
 - In a terminal window or panel, press **Ctrl+C**.
-- In VS Code, open the Command Palette and run **Tasks: Terminate Task**, then
-  choose the task or all running tasks.
+- In VS Code, open the Command Palette (**Cmd+Shift+P**) and run:
+
+  ```
+  Tasks: Terminate Task
+  ```
+
+  Then choose the task to stop, or pick **All Running Tasks** to stop both
+  servers at once.
 
 ## API Reference
 
