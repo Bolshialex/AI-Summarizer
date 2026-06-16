@@ -190,9 +190,10 @@ VSCodium, since they read the same `.vscode/tasks.json`.
 
 With the project open in your editor:
 
-- Press **Cmd+Shift+B** (the `dev` task is the default build task), or
-- Open the Command Palette (**Cmd+Shift+P**), choose **Tasks: Run Task**, then
-  pick **dev**.
+- Press **Cmd+Shift+B** (Windows: **Ctrl+Shift+B**) — the `dev` task is the
+  default build task — or
+- Open the Command Palette (**Cmd+Shift+P**, Windows: **Ctrl+Shift+P**), choose
+  **Tasks: Run Task**, then pick **dev**.
 
 This launches both servers in split integrated terminals. The task picks the
 correct backend script per operating system automatically.
@@ -216,7 +217,7 @@ npm run dev
 
 - In a terminal window or panel, press **Ctrl+C**.
 - In VS Code (or Cursor, Windsurf, etc.), open the Command Palette
-  (**Cmd+Shift+P**) and run:
+  (**Cmd+Shift+P**, Windows: **Ctrl+Shift+P**) and run:
 
   ```
   Tasks: Terminate Task
