@@ -185,7 +185,10 @@ From the project root, this opens two terminal windows, one per server.
 
 ### Option B: VS Code task
 
-With the project open in VS Code:
+This also works in VS Code-based editors such as Cursor, Windsurf, and
+VSCodium, since they read the same `.vscode/tasks.json`.
+
+With the project open in your editor:
 
 - Press **Cmd+Shift+B** (the `dev` task is the default build task), or
 - Open the Command Palette (**Cmd+Shift+P**), choose **Tasks: Run Task**, then
@@ -212,7 +215,8 @@ npm run dev
 ### Stopping the servers
 
 - In a terminal window or panel, press **Ctrl+C**.
-- In VS Code, open the Command Palette (**Cmd+Shift+P**) and run:
+- In VS Code (or Cursor, Windsurf, etc.), open the Command Palette
+  (**Cmd+Shift+P**) and run:
 
   ```
   Tasks: Terminate Task
