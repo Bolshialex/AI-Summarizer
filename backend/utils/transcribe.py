@@ -1,5 +1,6 @@
 import tempfile
 from pathlib import Path
+from typing import Callable, Optional
 
 from groq import Groq
 
@@ -12,17 +13,30 @@ client = Groq(api_key=settings.GROQ_API_KEY)
 MAX_BYTES = 25 * 1024 * 1024
 CHUNK_SECONDS = 20 * 60
 
+# Called with (done, total) as each chunk finishes, so callers can report
+# transcription progress.
+ProgressFn = Callable[[int, int], None]
 
-def transcribe(audio_path: Path) -> dict:
+
+def transcribe(audio_path: Path, on_progress: Optional[ProgressFn] = None) -> dict:
     if audio_path.stat().st_size <= MAX_BYTES:
-        return _transcribe_single(audio_path)
+        if on_progress:
+            on_progress(0, 1)
+        result = _transcribe_single(audio_path)
+        if on_progress:
+            on_progress(1, 1)
+        return result
 
     with tempfile.TemporaryDirectory() as tmpdir:
         chunks = split_by_time(audio_path, Path(tmpdir), CHUNK_SECONDS)
+        total = len(chunks)
+        if on_progress:
+            on_progress(0, total)
+
         text_parts = []
         segments = []
         offset = 0.0
-        for chunk_path in chunks:
+        for done, chunk_path in enumerate(chunks, start=1):
             result = _transcribe_single(chunk_path)
             text_parts.append(result["text"])
             segments.extend(
@@ -30,6 +44,8 @@ def transcribe(audio_path: Path) -> dict:
                 for s in result["segments"]
             )
             offset += probe_duration(chunk_path)
+            if on_progress:
+                on_progress(done, total)
         return {"text": " ".join(text_parts).strip(), "segments": segments}
 
 
