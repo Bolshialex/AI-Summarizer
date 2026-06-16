@@ -10,6 +10,8 @@ router = APIRouter()
 
 @router.post("/summarize")
 async def summarize_upload(file: UploadFile):
+    name = file.filename or "untitled"
+
     transcription = await transcription_from_upload(file)
 
     result = summarize_transcription(transcription)
@@ -18,15 +20,15 @@ async def summarize_upload(file: UploadFile):
     embedding = await embed_summary(summary_text)
 
     record = await create_summary(
-        video_name=file.filename or "untitled",
+        video_name=name,
         summary=summary_text,
         embedding=embedding,
-        source=file.filename,
+        source=name,
     )
 
     return {
         "id": record["id"] if record else None,
-        "video_name": file.filename,
+        "video_name": name,
         "summary": summary_text,
         "segments": result["segments"],
     }

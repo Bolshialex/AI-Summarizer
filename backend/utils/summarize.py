@@ -1,19 +1,16 @@
-from openai import OpenAI
+from groq import Groq
 
 from config import settings
 from utils.prompt import build_summary_prompt
 
-client = OpenAI(
-    api_key=settings.OPENROUTER_API_KEY,
-    base_url="https://openrouter.ai/api/v1",
-)
+client = Groq(api_key=settings.GROQ_API_KEY)
 
 
 def summarize_transcript(transcript: str) -> str:
     prompt = build_summary_prompt(transcript)
 
     response = client.chat.completions.create(
-        model="meta-llama/llama-3.3-70b-instruct:free",
+        model=settings.SUMMARY_MODEL,
         messages=[
             {
                 "role": "system",

@@ -14,11 +14,9 @@ class Settings(BaseSettings):
     OPENROUTER_API_KEY: str
 
     # MODELS
-    EMBEDDING_MODEL: str
-    DIMENSION: num
-    # APP
-
-    # FILES
+    EMBEDDING_MODEL: str 
+    DIMENSION: int
+    SUMMARY_MODEL: str
 
     # VALIDATION
     @field_validator("*")
