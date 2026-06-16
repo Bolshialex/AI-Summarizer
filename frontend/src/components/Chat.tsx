@@ -27,12 +27,17 @@ export default function Chat() {
   }
 
   return (
-    <section className="panel">
-      <form className="search" onSubmit={handleSubmit}>
+    <section className="section">
+      <div className="section-head">
+        <span className="eyebrow">Search</span>
+        <h2>Search your summaries</h2>
+      </div>
+
+      <form className="card search" onSubmit={handleSubmit}>
         <input
           type="text"
           value={query}
-          placeholder="Search your past summaries…"
+          placeholder="Ask about anything you've summarized…"
           onChange={(e) => setQuery(e.target.value)}
           disabled={loading}
         />
@@ -50,14 +55,14 @@ export default function Chat() {
       {matches && matches.length > 0 && (
         <ul className="matches">
           {matches.map((m) => (
-            <li key={m.id} className="match">
+            <li key={m.id} className="card match">
               <div className="match-head">
                 <h3>{m.video_name}</h3>
                 <span className="score">
                   {(m.similarity * 100).toFixed(0)}% match
                 </span>
               </div>
-              <pre className="summary-text">{m.summary}</pre>
+              <p className="summary-text">{m.summary}</p>
             </li>
           ))}
         </ul>

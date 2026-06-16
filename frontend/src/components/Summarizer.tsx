@@ -1,13 +1,21 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { summarizeFile } from "../api";
 import { formatTimestamp } from "../format";
 import type { SummaryResponse } from "../types";
 
 export default function Summarizer() {
   const [file, setFile] = useState<File | null>(null);
+  const [dragging, setDragging] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<SummaryResponse | null>(null);
+  const [copied, setCopied] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  function pickFile(f: File | null) {
+    setFile(f);
+    setError(null);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -25,18 +33,65 @@ export default function Summarizer() {
     }
   }
 
+  async function copySummary() {
+    if (!result) return;
+    await navigator.clipboard.writeText(result.summary);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }
+
   return (
-    <section className="panel">
-      <form className="uploader" onSubmit={handleSubmit}>
-        <label className="file-field">
+    <section className="section">
+      <div className="section-head">
+        <span className="eyebrow">Summarize</span>
+        <h2>Upload a recording</h2>
+      </div>
+
+      <form className="card uploader" onSubmit={handleSubmit}>
+        <div
+          className={`dropzone${dragging ? " dragging" : ""}${file ? " has-file" : ""}`}
+          onClick={() => inputRef.current?.click()}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragging(true);
+          }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragging(false);
+            pickFile(e.dataTransfer.files?.[0] ?? null);
+          }}
+        >
           <input
+            ref={inputRef}
             type="file"
             accept="audio/*,video/*"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            onChange={(e) => pickFile(e.target.files?.[0] ?? null)}
             disabled={loading}
           />
-          <span>{file ? file.name : "Choose an audio or video file"}</span>
-        </label>
+          <span className="dropzone-icon" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 16V4m0 0L8 8m4-4l4 4"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M4 16v2.5A1.5 1.5 0 005.5 20h13a1.5 1.5 0 001.5-1.5V16"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
+            </svg>
+          </span>
+          <p className="dropzone-main">
+            {file ? file.name : "Drop a file here, or click to browse"}
+          </p>
+          <p className="dropzone-sub">Audio or video files</p>
+        </div>
+
         <button type="submit" disabled={!file || loading}>
           {loading ? "Summarizing…" : "Summarize"}
         </button>
@@ -51,11 +106,15 @@ export default function Summarizer() {
       {error && <p className="error">{error}</p>}
 
       {result && (
-        <div className="result">
-          <h2>{result.video_name}</h2>
+        <div className="card result">
+          <div className="result-head">
+            <h3>{result.video_name}</h3>
+            <button type="button" className="ghost" onClick={copySummary}>
+              {copied ? "Copied" : "Copy"}
+            </button>
+          </div>
 
-          <h3>Summary</h3>
-          <pre className="summary-text">{result.summary}</pre>
+          <p className="summary-text">{result.summary}</p>
 
           {result.segments.length > 0 && (
             <details className="transcript">
