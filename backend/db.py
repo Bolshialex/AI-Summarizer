@@ -16,6 +16,7 @@ async def create_summary(
     summary: str,
     embedding: list[float],
     source: str | None = None,
+    chunk_index: int = 0,
 ):
     if supabase is None:
         raise RuntimeError("Supabase client is not working")
@@ -28,6 +29,9 @@ async def create_summary(
                 "summary": summary,
                 "embedding": embedding,
                 "source": source,
+                # The table requires chunk_index (NOT NULL). The app stores one
+                # combined summary per upload, so this is always 0.
+                "chunk_index": chunk_index,
             }
         )
         .execute()
