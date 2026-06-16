@@ -63,7 +63,7 @@ export default function Summarizer() {
   function pickFile(f: File | null) {
     if (f && !isSupported(f)) {
       setFile(null);
-      setError("That file type isn't supported — choose an audio or video file.");
+      setError("That file type isn't supported. Choose an audio or video file.");
       return;
     }
     setFile(f);
@@ -166,7 +166,7 @@ export default function Summarizer() {
             <span style={{ width: `${progress.percent}%` }} />
           </div>
           <p className="hint">
-            {progress.label} — {progress.percent}% · {elapsed}s elapsed
+            {progress.label} · {progress.percent}% · {elapsed}s elapsed
           </p>
         </div>
       )}
