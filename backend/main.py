@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from routes.chat import router as chat_router
 from routes.summary import router as summary_router
 from routes.transcribe import router as transcribe_router
 
@@ -15,6 +16,7 @@ app.add_middleware(
 
 app.include_router(transcribe_router)
 app.include_router(summary_router)
+app.include_router(chat_router)
 
 
 @app.get("/")
