@@ -1,4 +1,6 @@
 import tempfile
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Callable, Optional
 
@@ -12,6 +14,7 @@ client = Groq(api_key=settings.GROQ_API_KEY)
 
 MAX_BYTES = 25 * 1024 * 1024
 CHUNK_SECONDS = 20 * 60
+MAX_WORKERS = 4
 
 # Called with (done, total) as each chunk finishes, so callers can report
 # transcription progress.
@@ -33,19 +36,40 @@ def transcribe(audio_path: Path, on_progress: Optional[ProgressFn] = None) -> di
         if on_progress:
             on_progress(0, total)
 
+
+        offsets = []
+        acc = 0.0
+        for chunk_path in chunks:
+            offsets.append(acc)
+            acc += probe_duration(chunk_path)
+
+        # Transcribe chunks concurrently, storing each result at its chunk index.
+        results: list[Optional[dict]] = [None] * total
+        done = 0
+        lock = threading.Lock()
+        with ThreadPoolExecutor(max_workers=min(MAX_WORKERS, total)) as executor:
+            futures = {
+                executor.submit(_transcribe_single, chunk_path): i
+                for i, chunk_path in enumerate(chunks)
+            }
+            for future in as_completed(futures):
+                i = futures[future]
+                results[i] = future.result()
+                if on_progress:
+                    with lock:
+                        done += 1
+                        on_progress(done, total)
+
+        # Stitch results in chunk order, applying each chunk's time offset.
         text_parts = []
         segments = []
-        offset = 0.0
-        for done, chunk_path in enumerate(chunks, start=1):
-            result = _transcribe_single(chunk_path)
+        for result, offset in zip(results, offsets):
+            assert result is not None  # every future resolved above
             text_parts.append(result["text"])
             segments.extend(
                 {"start": s["start"] + offset, "end": s["end"] + offset, "text": s["text"]}
                 for s in result["segments"]
             )
-            offset += probe_duration(chunk_path)
-            if on_progress:
-                on_progress(done, total)
         return {"text": " ".join(text_parts).strip(), "segments": segments}
 
 
