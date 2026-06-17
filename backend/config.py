@@ -1,16 +1,22 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Optional
+
 from pydantic import field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    # SUPABASE
+    SUPABASE_URL: Optional[str] = None
+    SUPABASE_SERVICE_ROLE_KEY: Optional[str] = None
 
-    # LLM 
+    # LLM
+    GROQ_API_KEY: str
+    OPENROUTER_API_KEY: str
 
     # MODELS
-
-    # APP
-
-    # FILES
+    EMBEDDING_MODEL: str 
+    DIMENSION: int
+    SUMMARY_MODEL: str
 
     # VALIDATION
     @field_validator("*")

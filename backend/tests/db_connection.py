@@ -1,6 +1,8 @@
-from backend.db import supabase
+from db import supabase
 
 def test_db_connection():
+    if supabase is None:
+        raise RuntimeError("Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env")
     response = supabase.table("summarizations").select("*").limit(1).execute()
     
     if response.data:
