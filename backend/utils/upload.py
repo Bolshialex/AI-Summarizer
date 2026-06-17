@@ -5,7 +5,7 @@ from typing import Optional
 
 from fastapi import UploadFile
 
-from utils.audio import normalize_to_flac
+from utils.audio import normalize_audio
 from utils.transcribe import ProgressFn, transcribe
 
 
@@ -17,8 +17,8 @@ async def transcription_from_upload(file: UploadFile) -> dict:
         with open(upload_path, "wb") as out:
             shutil.copyfileobj(file.file, out)
 
-        audio_path = tmp / "audio.flac"
-        normalize_to_flac(upload_path, audio_path)
+        audio_path = tmp / "audio.m4a"
+        normalize_audio(upload_path, audio_path)
 
         return transcribe(audio_path)
 
@@ -34,7 +34,7 @@ def transcription_from_bytes(
         upload_path = tmp / f"upload{suffix}"
         upload_path.write_bytes(data)
 
-        audio_path = tmp / "audio.flac"
-        normalize_to_flac(upload_path, audio_path)
+        audio_path = tmp / "audio.m4a"
+        normalize_audio(upload_path, audio_path)
 
         return transcribe(audio_path, on_progress=on_progress)

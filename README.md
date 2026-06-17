@@ -52,9 +52,11 @@ flowchart LR
     F --> I[Ranked matches]
 ```
 
-1. **Speech-to-Text.** The backend extracts the audio track with `ffmpeg`,
-   normalizes it, splits anything over 25 MB into chunks, and transcribes it with
-   Groq's Whisper model. The result is full text plus per-segment timestamps.
+1. **Speech-to-Text.** The backend extracts the audio track with `ffmpeg` and
+   compresses it to a small mono file, so most recordings stay well under the
+   API's size limit. Only very long recordings are split into ~10-minute chunks,
+   transcribed in parallel and stitched back together. Transcription uses Groq's
+   Whisper model and returns full text plus per-segment timestamps.
 2. **Summarization.** The transcript is sent to a Groq chat model, which returns
    the summary. The summary is embedded through OpenRouter and saved to Supabase.
    The frontend shows live progress for each stage over a streamed response.
@@ -72,7 +74,7 @@ flowchart LR
 | Summarization | Groq `llama-3.3-70b-versatile` |
 | Embeddings | OpenRouter embedding model |
 | Vector store / RAG | Supabase (Postgres + pgvector) |
-| Media processing | ffmpeg / ffprobe |
+| Media processing | ffmpeg |
 
 ## Prerequisites
 
@@ -253,8 +255,9 @@ Notes:
 
 - Video files work too. ffmpeg pulls the audio track automatically. Tested with
   MP3, MP4, WAV, M4A.
-- Large files over 25 MB are split into 20-minute chunks and stitched back
-  together, so long recordings work fine.
+- Audio is compressed before upload, so most recordings stay under the API's
+  25 MB limit. Long recordings that still exceed it are split into ~10-minute
+  chunks, transcribed in parallel, and stitched back together.
 - Whisper handles roughly 100 languages out of the box; no need to specify one.
 - Because `/summarize` streams Server-Sent Events, the Swagger page shows its raw
   stream rather than a formatted JSON block. The frontend is the best way to
